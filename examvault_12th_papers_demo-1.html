@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ExamVault — 12th Papers</title>
+<style>
+:root{--bg:#070b12;--card:#0e1622;--line:#1d2b3d;--text:#edf5ff;--muted:#91a2b8;--accent:#5df3bf}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+nav{position:sticky;top:0;z-index:5;background:#070b12e8;backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:16px 7%;display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:900;color:var(--accent);font-size:21px}.navbtn{color:#cbd7e8;text-decoration:none;margin-left:20px;font-size:14px}
+.hero{padding:90px 7% 55px;text-align:center;background:radial-gradient(circle at 50% 0,#12322d55,transparent 45%)}
+.badge{display:inline-block;border:1px solid #245b4d;border-radius:99px;padding:7px 13px;color:var(--accent);font-size:13px}
+h1{font-size:clamp(42px,7vw,76px);line-height:1.02;margin:18px 0}h1 span{color:var(--accent)}
+.hero p{max-width:650px;margin:auto;color:var(--muted);font-size:17px}
+.wrap{max-width:1100px;margin:auto;padding:30px 7% 80px}.filters{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 30px}
+select,.search{background:var(--card);border:1px solid var(--line);color:var(--text);padding:12px;border-radius:10px}
+.search{flex:1;min-width:200px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.tag{font-size:12px;color:var(--accent)}
+.card h3{margin:8px 0}.card p{color:var(--muted);font-size:14px}.price{font-size:22px;font-weight:800;margin:15px 0}
+button{border:0;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer}.buy{width:100%;background:var(--accent);color:#07110d}.free{background:#162334;color:#dce8f7}
+.note{margin:35px 0;padding:17px;border:1px dashed #2a3b51;border-radius:12px;color:#93a4ba;font-size:14px}
+footer{text-align:center;border-top:1px solid var(--line);padding:30px;color:#667990}
+.modal{display:none;position:fixed;inset:0;background:#0009;align-items:center;justify-content:center;padding:20px;z-index:20}.box{max-width:430px;width:100%;background:#0d1520;border:1px solid var(--line);border-radius:18px;padding:25px}.box h2{margin-top:0}.close{float:right;background:none;color:#9fb0c7;font-size:20px}.success{display:none;text-align:center}.success .check{font-size:45px;color:var(--accent)}
+</style>
+</head>
+<body>
+<nav><div class="logo">EXAMVAULT</div><div><a class="navbtn" href="#papers">Papers</a><a class="navbtn" href="#about">About</a></div></nav>
+
+<header class="hero">
+<div class="badge">📚 Maharashtra 12th Study Hub</div>
+<h1>Previous Papers.<br><span>One Place.</span></h1>
+<p>Find 12th-standard question papers, practice sets and study resources in one clean place.</p>
+</header>
+
+<main class="wrap" id="papers">
+<h2>Available Papers</h2>
+<div class="filters">
+<input class="search" id="search" placeholder="Search paper or subject..." oninput="render()">
+<select id="subject" onchange="render()"><option value="All">All Subjects</option><option>Physics</option><option>Chemistry</option><option>Biology</option><option>Mathematics</option></select>
+</div>
+<div class="grid" id="grid"></div>
+
+<div class="note" id="about">
+<strong>⚠️ Demo payment system:</strong> This version demonstrates the purchase → payment-success → download flow. For a real public paid website, connect a verified payment gateway and a secure backend that checks the payment before issuing a download link. Only upload PDFs you own or are legally allowed to distribute.
+</div>
+</main>
+
+<footer>© 2026 ExamVault • Built for students</footer>
+
+<div class="modal" id="modal">
+<div class="box">
+<button class="close" onclick="closeModal()">×</button>
+<div id="pay">
+<h2>Unlock Paper</h2>
+<p id="selected"></p>
+<p class="price" id="modalPrice"></p>
+<button class="buy" onclick="demoPay()">Simulate Successful Payment</button>
+</div>
+<div class="success" id="success">
+<div class="check">✓</div><h2>Payment Successful</h2>
+<p>Your download is ready.</p>
+<button class="buy" onclick="downloadDemo()">Download PDF</button>
+</div>
+</div>
+</div>
+
+<script>
+const papers=[
+{name:"Physics — Board Paper 2026",subject:"Physics",year:"2026",price:29,file:null},
+{name:"Chemistry — Board Paper 2026",subject:"Chemistry",year:"2026",price:29,file:null},
+{name:"Biology — Board Paper 2026",subject:"Biology",year:"2026",price:29,file:null},
+{name:"Mathematics — Board Paper 2026",subject:"Mathematics",year:"2026",price:29,file:null},
+{name:"Physics — Practice Set",subject:"Physics",year:"Practice",price:19,file:null},
+{name:"Chemistry — Practice Set",subject:"Chemistry",year:"Practice",price:19,file:null}
+];
+let chosen=null;
+function render(){
+ const q=document.getElementById("search").value.toLowerCase();
+ const s=document.getElementById("subject").value;
+ const list=papers.filter(p=>(s==="All"||p.subject===s)&&p.name.toLowerCase().includes(q));
+ document.getElementById("grid").innerHTML=list.map((p,i)=>`
+ <article class="card"><span class="tag">${p.subject} • ${p.year}</span><h3>${p.name}</h3>
+ <p>PDF study material. Add your authorised PDF file to this paper in the website code.</p>
+ <div class="price">₹${p.price}</div>
+ <button class="buy" onclick="openPay(${papers.indexOf(p)})">Unlock & Download</button></article>`).join("");
+}
+function openPay(i){chosen=papers[i];document.getElementById("selected").textContent=chosen.name;document.getElementById("modalPrice").textContent="₹"+chosen.price;document.getElementById("pay").style.display="block";document.getElementById("success").style.display="none";document.getElementById("modal").style.display="flex"}
+function closeModal(){document.getElementById("modal").style.display="none"}
+function demoPay(){document.getElementById("pay").style.display="none";document.getElementById("success").style.display="block"}
+function downloadDemo(){
+ if(chosen && chosen.file){const a=document.createElement("a");a.href=chosen.file;a.download=chosen.name+".pdf";a.click();}
+ else alert("Demo: no PDF is attached yet. Add your authorised PDF file to this paper first.");
+}
+render();
+</script>
+</body>
+</html>
